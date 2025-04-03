@@ -5,6 +5,7 @@ using Aspire.StackExchange.Redis;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Hosting;
@@ -48,7 +49,8 @@ public static class AspireRedisDistributedCacheExtensions
     /// Adds Redis distributed caching services, <see cref="IDistributedCache"/>, in the services provided by the <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHostApplicationBuilder"/> to read config from and add services to.</param>
-    /// <param name="name">The name of the component, which is used as the <see cref="ServiceDescriptor.ServiceKey"/> of the service and also to retrieve the connection string from the ConnectionStrings configuration section.</param>
+    /// <param name="name">The name of the connection string from the ConnectionStrings configuration section.</param>
+    /// <param name="serviceKey">The name of the component, which is used as the <see cref="ServiceDescriptor.ServiceKey"/> of the service. If <lang type="keyword">null</lang> then <paramref name="name" /> is used.</param>
     /// <param name="configureSettings">An optional method that can be used for customizing the <see cref="StackExchangeRedisSettings"/>. It's invoked after the settings are read from the configuration.</param>
     /// <param name="configureOptions">An optional method that can be used for customizing the <see cref="ConfigurationOptions"/>. It's invoked after the options are read from the configuration.</param>
     /// <remarks>
@@ -60,6 +62,7 @@ public static class AspireRedisDistributedCacheExtensions
     public static void AddKeyedRedisDistributedCache(
         this IHostApplicationBuilder builder,
         string name,
+        string? serviceKey = null,
         Action<StackExchangeRedisSettings>? configureSettings = null,
         Action<ConfigurationOptions>? configureOptions = null)
     {
@@ -68,17 +71,46 @@ public static class AspireRedisDistributedCacheExtensions
 
         builder.AddKeyedRedisClient(name, configureSettings, configureOptions);
 
-        builder.AddRedisDistributedCacheCore((RedisCacheOptions options, IServiceProvider sp) =>
+        builder.Services.Add(ServiceDescriptor.KeyedSingleton<IDistributedCache>(serviceKey ??= name, (sp, key) =>
         {
-            options.ConnectionMultiplexerFactory = () => Task.FromResult(sp.GetRequiredKeyedService<IConnectionMultiplexer>(name));
-        });
+            return new AspireRedisCacheImpl(name, serviceKey?.ToString(), sp, configureOptions);
+        }));
     }
 
     private static void AddRedisDistributedCacheCore(this IHostApplicationBuilder builder, Action<RedisCacheOptions, IServiceProvider> configureRedisOptions)
     {
         builder.Services.AddStackExchangeRedisCache(static _ => { });
 
+        builder.Services.AddOptions();
+
         builder.Services.AddOptions<RedisCacheOptions>() // note that RedisCacheOptions doesn't support named options
             .Configure(configureRedisOptions);
+    }
+}
+
+internal sealed class AspireRedisCacheImpl : RedisCache
+{
+    public AspireRedisCacheImpl(string redisName, string? prefix, IServiceProvider sp, Action<ConfigurationOptions>? configureOptions)
+        : base(AlterOptions(redisName, prefix, sp, configureOptions))
+    {
+    }
+
+    private static IOptions<RedisCacheOptions> AlterOptions(string redisName, string? prefix, IServiceProvider sp, Action<ConfigurationOptions>? configureOptions)
+    {
+        var options = sp.GetRequiredService<IOptions<RedisCacheOptions>>().Value;
+
+        configureOptions?.Invoke(options.ConfigurationOptions ??= new ConfigurationOptions());
+
+        var newOptions = new RedisCacheOptions
+        {
+            Configuration = options.Configuration,
+            ConfigurationOptions = options.ConfigurationOptions,
+            // Get the keyed connection multiplexer registered with AddKeyedRedisClient
+            ConnectionMultiplexerFactory = () => Task.FromResult(sp.GetRequiredKeyedService<IConnectionMultiplexer>(redisName)),
+            InstanceName = $"{options.InstanceName}{prefix}",
+            ProfilingSession = options.ProfilingSession
+        };
+
+        return Options.Options.Create(newOptions);
     }
 }
