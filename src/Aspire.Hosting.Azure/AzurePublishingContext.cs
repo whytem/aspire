@@ -372,13 +372,16 @@ public sealed class AzurePublishingContext(
 
             if (!p.Secret && p.Default is not null)
             {
-#pragma warning disable CS0619
-                pp.Value = p.Value;
-#pragma warning restore CS0619
+                SetParameterValue(pp, p);
             }
 
             ParameterLookup[p] = pp;
         }
+    }
+
+    private static void SetParameterValue(ProvisioningParameter pp, ParameterResource p)
+    {
+        pp.Value = p.Value;
     }
 
     private static void Visit(object? value, Action<object> visitor) =>

@@ -34,9 +34,9 @@ public class ParameterProcessorTests
         {
             Assert.NotNull(param.WaitForValueTcs);
             Assert.True(param.WaitForValueTcs.Task.IsCompletedSuccessfully);
-#pragma warning disable CS0619 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Equal(param.Value, await param.WaitForValueTcs.Task);
-#pragma warning restore CS0619 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 
@@ -60,9 +60,9 @@ public class ParameterProcessorTests
         {
             Assert.NotNull(param.WaitForValueTcs);
             Assert.True(param.WaitForValueTcs.Task.IsCompletedSuccessfully);
-#pragma warning disable CS0619 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Equal(param.Value, await param.WaitForValueTcs.Task);
-#pragma warning restore CS0619 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 
