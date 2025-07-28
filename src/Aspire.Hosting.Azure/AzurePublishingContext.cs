@@ -372,7 +372,9 @@ public sealed class AzurePublishingContext(
 
             if (!p.Secret && p.Default is not null)
             {
+#pragma warning disable CS0619
                 pp.Value = p.Value;
+#pragma warning restore CS0619
             }
 
             ParameterLookup[p] = pp;

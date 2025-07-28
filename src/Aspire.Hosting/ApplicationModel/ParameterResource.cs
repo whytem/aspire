@@ -31,6 +31,11 @@ public class ParameterResource : Resource, IResourceWithoutLifetime, IManifestEx
     /// <summary>
     /// Gets the value of the parameter.
     /// </summary>
+    /// <remarks>
+    /// This property is obsolete. Use <see cref="GetValueAsync(CancellationToken)"/> for asynchronous access
+    /// or work directly with the <see cref="ParameterResource"/> instance for configuration scenarios.
+    /// </remarks>
+    [Obsolete("Use GetValueAsync for asynchronous access or work directly with the ParameterResource instance for configuration scenarios.", error: true)]
     public string Value => GetValueAsync(default).AsTask().GetAwaiter().GetResult()!;
 
     internal string ValueInternal => _lazyValue.Value;
