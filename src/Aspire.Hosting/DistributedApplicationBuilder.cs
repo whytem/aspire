@@ -220,7 +220,9 @@ public class DistributedApplicationBuilder : IDistributedApplicationBuilder
         }
         else
         {
-            var appHostShaBytes = SHA256.HashData(Encoding.UTF8.GetBytes(AppHostPath));
+            // Normalize path casing on Windows since file paths are case insensitive there
+            var pathForHash = OperatingSystem.IsWindows() ? AppHostPath.ToLowerInvariant() : AppHostPath;
+            var appHostShaBytes = SHA256.HashData(Encoding.UTF8.GetBytes(pathForHash));
             appHostSha = Convert.ToHexString(appHostShaBytes);
         }
         _innerBuilder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
