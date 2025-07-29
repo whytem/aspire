@@ -189,7 +189,15 @@ public class DistributedApplicationBuilder : IDistributedApplicationBuilder
 
         AppHostDirectory = options.ProjectDirectory ?? _innerBuilder.Environment.ContentRootPath;
         var appHostName = options.ProjectName ?? _innerBuilder.Environment.ApplicationName;
-        AppHostPath = Path.Join(AppHostDirectory, appHostName);
+        var appHostPath = Path.Join(AppHostDirectory, appHostName);
+        
+        // Normalize the AppHost path for consistent behavior across platforms and execution contexts
+        AppHostPath = Path.GetFullPath(appHostPath);
+        if (OperatingSystem.IsWindows())
+        {
+            // Normalize casing on Windows since file paths are case-insensitive
+            AppHostPath = AppHostPath.ToLowerInvariant();
+        }
 
         var assemblyMetadata = AppHostAssembly?.GetCustomAttributes<AssemblyMetadataAttribute>();
         var aspireDir = GetMetadataValue(assemblyMetadata, "AppHostProjectBaseIntermediateOutputPath");
@@ -220,14 +228,7 @@ public class DistributedApplicationBuilder : IDistributedApplicationBuilder
         }
         else
         {
-            // Normalize path format and casing
-            var pathForHash = Path.GetFullPath(AppHostPath);
-            // Normalize path casing on Windows since file paths are case insensitive there
-            if (OperatingSystem.IsWindows())
-            {
-                pathForHash = pathForHash.ToLowerInvariant();
-            }
-            var appHostShaBytes = SHA256.HashData(Encoding.UTF8.GetBytes(pathForHash));
+            var appHostShaBytes = SHA256.HashData(Encoding.UTF8.GetBytes(AppHostPath));
             appHostSha = Convert.ToHexString(appHostShaBytes);
         }
         _innerBuilder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
