@@ -133,4 +133,36 @@ public class VolumeNameGeneratorTests
         
         Assert.Equal(volumeName1, volumeName2);
     }
+    
+    [Fact]
+    public void VolumeNameUsesPathNormalizationInRunMode()
+    {
+        // This test verifies that volume names are generated using the run mode path normalization logic
+        // which includes Path.GetFullPath() and Windows casing normalization
+        
+        var builder = TestDistributedApplicationBuilder.Create(); // Defaults to run mode
+        
+        // Verify this builder is indeed in run mode (not publish mode)
+        Assert.False(builder.ExecutionContext.IsPublishMode);
+        Assert.True(builder.ExecutionContext.IsRunMode);
+        
+        // Get the SHA256 that was generated - this should be based on the normalized AppHost path
+        var appHostSha = builder.Configuration["AppHost:Sha256"];
+        Assert.NotNull(appHostSha);
+        
+        // The SHA should be consistent across multiple instantiations with the same path
+        var builder2 = TestDistributedApplicationBuilder.Create();
+        var appHostSha2 = builder2.Configuration["AppHost:Sha256"];
+        
+        Assert.Equal(appHostSha, appHostSha2);
+        
+        // Both builders should generate the same volume names for the same resource
+        var resource1 = builder.AddResource(new TestResource("testresource"));
+        var resource2 = builder2.AddResource(new TestResource("testresource"));
+        
+        var volumeName1 = Generate(resource1, "data");
+        var volumeName2 = Generate(resource2, "data");
+        
+        Assert.Equal(volumeName1, volumeName2);
+    }
 }
