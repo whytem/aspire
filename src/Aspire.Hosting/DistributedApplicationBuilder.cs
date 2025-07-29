@@ -213,7 +213,11 @@ public class DistributedApplicationBuilder : IDistributedApplicationBuilder
         // with the same name as seen in https://github.com/dotnet/aspire/issues/5413. For publish scenarios,
         // we want to use a stable hash based only on the project name.
         string appHostSha;
-        if (ExecutionContext.IsPublishMode)
+        
+        // Only use app name hashing for explicit publish operations to ensure consistent volume names
+        // for all local development scenarios (F5 debugging and dotnet run)
+        var explicitPublishOperation = _innerBuilder.Configuration["AppHost:Operation"]?.ToLowerInvariant() == "publish";
+        if (explicitPublishOperation)
         {
             var appHostNameShaBytes = SHA256.HashData(Encoding.UTF8.GetBytes(appHostName));
             appHostSha = Convert.ToHexString(appHostNameShaBytes);
