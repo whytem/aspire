@@ -165,4 +165,58 @@ public class VolumeNameGeneratorTests
         
         Assert.Equal(volumeName1, volumeName2);
     }
+
+    [Theory]
+    [InlineData(@"C:\Project\App")]
+    [InlineData(@"c:\project\app")]
+    [InlineData(@"C:/Project/App")]
+    [InlineData(@"C:\Project\App\")]
+    [InlineData(@"C:\Project\..\Project\App")]
+    public void VolumeNameConsistentAcrossPathCasingsAndFormats(string projectDirectory)
+    {
+        // This test verifies that different representations of the same path produce the same volume name
+        // when using DistributedApplicationBuilder with DistributedApplicationOptions.ProjectDirectory
+        
+        var options = new DistributedApplicationOptions
+        {
+            ProjectDirectory = projectDirectory,
+            Args = [] // Ensure run mode (default)
+        };
+        
+        var builder = DistributedApplication.CreateBuilder(options);
+        
+        // Verify this is in run mode so path-based hashing is used
+        Assert.False(builder.ExecutionContext.IsPublishMode);
+        Assert.True(builder.ExecutionContext.IsRunMode);
+        
+        var appHostSha = builder.Configuration["AppHost:Sha256"];
+        Assert.NotNull(appHostSha);
+        
+        // On Windows, all these different path representations should produce the same SHA
+        // because the path normalization logic applies Path.GetFullPath() and ToLowerInvariant()
+        // On non-Windows systems, case differences would produce different SHAs, but path normalization still applies
+        if (OperatingSystem.IsWindows())
+        {
+            // On Windows, all these different path representations should normalize to the same value
+            // and produce the same SHA due to case-insensitive filesystem normalization
+            // We test this by running with a reference path and comparing
+            var referenceOptions = new DistributedApplicationOptions
+            {
+                ProjectDirectory = @"c:\project\app", // normalized reference form
+                Args = []
+            };
+            
+            var referenceBuilder = DistributedApplication.CreateBuilder(referenceOptions);
+            var referenceSha = referenceBuilder.Configuration["AppHost:Sha256"];
+            
+            // All test paths should produce the same SHA as the reference
+            Assert.Equal(referenceSha, appHostSha);
+        }
+        
+        // Create a resource and verify volume name generation works
+        var resource = builder.AddResource(new TestResource("myresource"));
+        var volumeName = Generate(resource, "data");
+        Assert.NotNull(volumeName);
+        Assert.Contains("myresource-data", volumeName);
+    }
 }
