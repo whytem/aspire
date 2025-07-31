@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Cryptography;
+using System.Text;
 using static Aspire.Hosting.VolumeNameGenerator;
 using Aspire.Hosting.Utils;
 
@@ -106,36 +108,27 @@ public class VolumeNameGeneratorTests
         if (OperatingSystem.IsWindows())
         {
             // On Windows, all test paths should normalize to the same value and produce the same SHA
-            var referenceOptions = new DistributedApplicationOptions
-            {
-                ProjectDirectory = @"c:\project\app", // normalized reference form (lowercase)
-                Args = []
-            };
-            
-            var referenceBuilder = DistributedApplication.CreateBuilder(referenceOptions);
-            var referenceSha = referenceBuilder.Configuration["AppHost:Sha256"];
+            // Compute the expected SHA directly using the same logic as the builder
+            var referencePath = Path.Join(@"c:\project\app", builder.Environment.ApplicationName);
+            var normalizedReferencePath = Path.GetFullPath(referencePath).ToLowerInvariant();
+            var expectedShaBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedReferencePath));
+            var expectedSha = Convert.ToHexString(expectedShaBytes);
             
             // All test paths should produce the same SHA as the reference due to case-insensitive normalization
-            Assert.Equal(referenceSha, appHostSha);
+            Assert.Equal(expectedSha, appHostSha);
         }
         else
         {
             // On non-Windows systems, verify that the path normalization still works with Path.GetFullPath()
             // Case differences will produce different SHAs, but path format normalization should still apply
-            var normalizedPath = Path.GetFullPath(projectDirectory);
-            
-            // Create another builder with the already-normalized path to verify consistency
-            var normalizedOptions = new DistributedApplicationOptions
-            {
-                ProjectDirectory = normalizedPath,
-                Args = []
-            };
-            
-            var normalizedBuilder = DistributedApplication.CreateBuilder(normalizedOptions);
-            var normalizedSha = normalizedBuilder.Configuration["AppHost:Sha256"];
+            var normalizedProjectDir = Path.GetFullPath(projectDirectory);
+            var normalizedPath = Path.Join(normalizedProjectDir, builder.Environment.ApplicationName);
+            var normalizedAppHostPath = Path.GetFullPath(normalizedPath);
+            var expectedShaBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedAppHostPath));
+            var expectedSha = Convert.ToHexString(expectedShaBytes);
             
             // The normalized path should produce the same SHA as the original path after normalization
-            Assert.Equal(normalizedSha, appHostSha);
+            Assert.Equal(expectedSha, appHostSha);
         }
     }
 }
