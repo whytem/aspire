@@ -1228,6 +1228,13 @@ internal sealed partial class DcpExecutor : IDcpExecutor, IConsoleLogsService, I
             throw new FailedToApplyEnvironmentException();
         }
 
+        // Validate that the total size of annotations doesn't exceed Kubernetes limits
+        var annotationsSize = exe.CalculateAnnotationsSize();
+        if (annotationsSize > CustomResource.KubernetesAnnotationsSizeLimit)
+        {
+            throw new ExecutableArgumentsTooLongException(er.ModelResource.Name, annotationsSize, CustomResource.KubernetesAnnotationsSizeLimit);
+        }
+
         try
         {
             AspireEventSource.Instance.DcpExecutableCreateStart(er.DcpResourceName);

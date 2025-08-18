@@ -47,6 +47,29 @@ public class DcpExecutorTests
     }
 
     [Fact]
+    public async Task ExecutableWithTooLongArgsThrowsSpecificException()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder();
+        
+        // Create a very long argument that will exceed the Kubernetes annotation size limit
+        var longArgument = new string('a', 300000); // 300KB, well above the 262KB limit
+        builder.AddExecutable("test-exe", "cmd", ".").WithArgs(longArgument);
+
+        var kubernetesService = new TestKubernetesService();
+        using var app = builder.Build();
+        var distributedAppModel = app.Services.GetRequiredService<DistributedApplicationModel>();
+
+        var appExecutor = CreateAppExecutor(distributedAppModel, kubernetesService: kubernetesService);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ExecutableArgumentsTooLongException>(() => appExecutor.RunApplicationAsync());
+        Assert.Equal("test-exe", exception.ResourceName);
+        Assert.True(exception.ActualSize > CustomResource.KubernetesAnnotationsSizeLimit);
+        Assert.Equal(CustomResource.KubernetesAnnotationsSizeLimit, exception.MaxSize);
+    }
+
+    [Fact]
     public async Task ResourceStarted_ProjectHasReplicas_EventRaisedOnce()
     {
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions

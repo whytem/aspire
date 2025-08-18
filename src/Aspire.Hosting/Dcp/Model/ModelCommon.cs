@@ -4,6 +4,7 @@
 namespace Aspire.Hosting.Dcp.Model;
 
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -29,6 +30,9 @@ internal abstract class CustomResource : KubernetesObject, IMetadata<V1ObjectMet
     public const string ResourceProjectArgsAnnotation = "resource-project-args";
     public const string ResourceReplicaCount = "resource-replica-count";
     public const string ResourceReplicaIndex = "resource-replica-index";
+
+    // Kubernetes annotation size limit is 262,144 bytes (256KB - 1)
+    public const int KubernetesAnnotationsSizeLimit = 262144;
 
     public string? AppModelResourceName => Metadata.Annotations?.TryGetValue(ResourceNameAnnotation, out var value) is true ? value : null;
 
@@ -126,6 +130,22 @@ internal abstract class CustomResource : KubernetesObject, IMetadata<V1ObjectMet
 
         var newAnnotationVal = JsonSerializer.Serialize<List<TValue>>(values);
         annotations[annotationName] = newAnnotationVal;
+    }
+
+    /// <summary>
+    /// Calculates the total size in bytes of all annotations when serialized.
+    /// </summary>
+    /// <returns>The total size of annotations in bytes.</returns>
+    public int CalculateAnnotationsSize()
+    {
+        if (Metadata.Annotations is null)
+        {
+            return 0;
+        }
+
+        using var stream = new MemoryStream();
+        JsonSerializer.Serialize(stream, Metadata.Annotations);
+        return (int)stream.Length;
     }
 }
 
