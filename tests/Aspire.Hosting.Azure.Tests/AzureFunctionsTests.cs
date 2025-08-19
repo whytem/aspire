@@ -582,4 +582,281 @@ public class AzureFunctionsTests
         // Verify that no DefaultLaunchProfileAnnotation is added when no configuration is set
         Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
     }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProject_WhenAppHostConfigured()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "TestProfile";
+        
+        builder.AddAzureFunctionsProject<TestProject>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("TestProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithMalformedPort_WhenAppHostConfigured()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "TestProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithMalformedPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("TestProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithPartialPort_WhenAppHostConfigured()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "TestProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithPartialPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("TestProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithoutPortArgument_WhenAppHostConfigured()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "TestProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithoutPortArgument>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("TestProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithMultiplePorts_WhenAppHostConfigured()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "TestProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithMultiplePorts>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("TestProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithHttps_WhenAppHostConfigured()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "TestProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithHttps>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("TestProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithHttpsNoPort_WhenAppHostConfigured()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "TestProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithHttpsNoPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("TestProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProject_FromDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProject>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("DotnetProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithMalformedPort_FromDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithMalformedPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("DotnetProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithPartialPort_FromDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithPartialPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("DotnetProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithoutPortArgument_FromDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithoutPortArgument>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("DotnetProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithMultiplePorts_FromDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithMultiplePorts>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("DotnetProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithHttps_FromDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithHttps>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("DotnetProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AddsDefaultLaunchProfileAnnotation_TestProjectWithHttpsNoPort_FromDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProjectWithHttpsNoPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("DotnetProfile", annotation.LaunchProfileName);
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_DoesNotAddLaunchProfileAnnotation_TestProject_WhenNoConfigurationSet()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        builder.AddAzureFunctionsProject<TestProject>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_DoesNotAddLaunchProfileAnnotation_TestProjectWithMalformedPort_WhenNoConfigurationSet()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        builder.AddAzureFunctionsProject<TestProjectWithMalformedPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_DoesNotAddLaunchProfileAnnotation_TestProjectWithPartialPort_WhenNoConfigurationSet()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        builder.AddAzureFunctionsProject<TestProjectWithPartialPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_DoesNotAddLaunchProfileAnnotation_TestProjectWithoutPortArgument_WhenNoConfigurationSet()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        builder.AddAzureFunctionsProject<TestProjectWithoutPortArgument>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_DoesNotAddLaunchProfileAnnotation_TestProjectWithMultiplePorts_WhenNoConfigurationSet()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        builder.AddAzureFunctionsProject<TestProjectWithMultiplePorts>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_DoesNotAddLaunchProfileAnnotation_TestProjectWithHttps_WhenNoConfigurationSet()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        builder.AddAzureFunctionsProject<TestProjectWithHttps>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_DoesNotAddLaunchProfileAnnotation_TestProjectWithHttpsNoPort_WhenNoConfigurationSet()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        builder.AddAzureFunctionsProject<TestProjectWithHttpsNoPort>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        Assert.False(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out _));
+    }
+
+    [Fact]
+    public void AddAzureFunctionsProject_AppHostConfigurationOverridesDotnetLaunchProfile()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+        
+        // Set both configurations, AppHost should take precedence
+        builder.Configuration["AppHost:DefaultLaunchProfileName"] = "AppHostProfile";
+        builder.Configuration["DOTNET_LAUNCH_PROFILE"] = "DotnetProfile";
+        
+        builder.AddAzureFunctionsProject<TestProject>("funcapp");
+
+        var functionsResource = Assert.Single(builder.Resources.OfType<AzureFunctionsProjectResource>());
+        
+        // Verify that AppHost configuration takes precedence
+        Assert.True(functionsResource.TryGetLastAnnotation<DefaultLaunchProfileAnnotation>(out var annotation));
+        Assert.Equal("AppHostProfile", annotation.LaunchProfileName);
+    }
 }
