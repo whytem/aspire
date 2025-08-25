@@ -214,6 +214,9 @@
     <Project Path="playground/keycloak/Keycloak.AppHost/Keycloak.AppHost.csproj" />
     <Project Path="playground/keycloak/Keycloak.Web/Keycloak.Web.csproj" />
   </Folder>
+  <Folder Name="/playground/mcpclient/">
+    <Project Path="playground/mcpclient/mcpclient.csproj" />
+  </Folder>
   <Folder Name="/playground/milvus/">
     <Project Path="playground/milvus/MilvusPlayground.ApiService/MilvusPlayground.ApiService.csproj" />
     <Project Path="playground/milvus/MilvusPlayground.AppHost/MilvusPlayground.AppHost.csproj" />

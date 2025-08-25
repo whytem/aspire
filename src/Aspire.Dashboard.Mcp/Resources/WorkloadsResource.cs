@@ -17,7 +17,7 @@ public class WorkloadsResource
     /// Lists all available workloads.
     /// </summary>
     [McpServerResource]
-    [Description("List all workloads that have console logs available")]
+    [Description("List all workloads in the AppHost")]
     public static async Task<string> ListWorkloads(
         IMcpServerDataProvider? dataProvider,  // Injected via DI
         CancellationToken cancellationToken)

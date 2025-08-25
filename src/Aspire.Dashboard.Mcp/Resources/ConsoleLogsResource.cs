@@ -8,7 +8,7 @@ using ModelContextProtocol.Server;
 namespace Aspire.Dashboard.Mcp.Resources;
 
 /// <summary>
-/// MCP resource that provides access to console logs using dependency injection.
+/// MCP resource that provides access to console logs of a workload in the AppHost.
 /// </summary>
 [McpServerResourceType]
 public class ConsoleLogsResource
@@ -16,11 +16,11 @@ public class ConsoleLogsResource
     /// <summary>
     /// Gets console logs for a specific workload.
     /// </summary>
-    [McpServerResource]
+    [McpServerResource(UriTemplate = "workload://logs/{workloadName}", Name = "workload_logs")]
     [Description("Get console logs for a specific workload")]
-    public static async Task<string> GetWorkloadLogs(
+    public static async Task<string> GetConsoleLogs(
         IMcpServerDataProvider? dataProvider,
-        [Description("Name of workload whose logs to inspect")] string workloadName,
+        string workloadName,
         CancellationToken cancellationToken)
     {
         if (dataProvider == null || !dataProvider.IsAvailable)
@@ -32,10 +32,11 @@ public class ConsoleLogsResource
         {
             return "Workload name is required.";
         }
-        
+
         try
         {
-            return await dataProvider.GetWorkloadLogsAsync(workloadName, cancellationToken).ConfigureAwait(false);
+            var logs = await dataProvider.GetWorkloadLogsAsync(workloadName, cancellationToken).ConfigureAwait(false);
+            return logs ?? $"No logs found for workload '{workloadName}'.";
         }
         catch (Exception ex)
         {

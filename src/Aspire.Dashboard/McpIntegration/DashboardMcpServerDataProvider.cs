@@ -34,7 +34,6 @@ public class DashboardMcpServerDataProvider : IMcpServerDataProvider
         }
         
         var logs = new StringBuilder();
-        logs.AppendLine(CultureInfo.InvariantCulture, $"=== Console Logs for '{workloadName}' ===\n");
         
         try
         {
@@ -64,12 +63,6 @@ public class DashboardMcpServerDataProvider : IMcpServerDataProvider
                         logs.AppendLine(CultureInfo.InvariantCulture, $"\n... (showing first {maxLines} lines)");
                         return logs.ToString();
                     }
-                }
-                
-                // Just get the first batch for this minimal example
-                if (lineCount > 0)
-                {
-                    break;
                 }
             }
             
