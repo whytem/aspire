@@ -148,39 +148,91 @@ try
                 var selectedTool = tools[toolIndex - 1];
                 Console.WriteLine($"\nTesting tool: {selectedTool.Name}");
                 
-                // For now, handle echo and reverse_echo tools specifically
-                if (selectedTool.Name == "echo" || selectedTool.Name == "reverse_echo")
+                // Handle execute_resource_command tool
+                if (selectedTool.Name == "execute_resource_command")
                 {
-                    Console.Write("Enter a message: ");
-                    var message = Console.ReadLine() ?? "Test message";
+                    // First, list available resources for the user to choose from
+                    Console.WriteLine("\nFetching available resources...");
                     
-                    var arguments = new Dictionary<string, object?>
+                    // Call the apphost_resources resource to get the list
+                    var listResourcesResource = resources.FirstOrDefault(r => r.Name == "apphost_resources");
+                    if (listResourcesResource != null)
                     {
-                        ["message"] = message
-                    };
-                    
-                    var response = await client.CallToolAsync(
-                        selectedTool.Name,
-                        arguments,
-                        progress: null,
-                        cancellationToken: default);
-                    
-                    if (response.IsError != true && response.Content.Count > 0)
-                    {
-                        var content = response.Content.First();
-                        if (content is ModelContextProtocol.Protocol.TextContentBlock textContent)
+                        try
                         {
-                            Console.WriteLine($"Response: {textContent.Text}");
+                            var resourceListContent = await client.ReadResourceAsync(listResourcesResource.Uri);
+                            if (resourceListContent.Contents.Count > 0)
+                            {
+                                var content = resourceListContent.Contents.First();
+                                if (content is ModelContextProtocol.Protocol.TextResourceContents textContent)
+                                {
+                                    Console.WriteLine("\nAvailable AppHost Resources:");
+                                    Console.WriteLine("─────────────────────────────");
+                                    Console.WriteLine(textContent.Text);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Could not fetch resource list: {ex.Message}");
                         }
                     }
-                    else if (response.IsError == true)
+                    
+                    Console.Write("\nEnter resource ID to manage: ");
+                    var resourceId = Console.ReadLine() ?? "";
+                    
+                    Console.WriteLine("\nSelect action:");
+                    Console.WriteLine("  1. Start");
+                    Console.WriteLine("  2. Stop");
+                    Console.WriteLine("  3. Restart");
+                    Console.Write("Choice (1-3): ");
+                    
+                    var actionChoice = Console.ReadLine();
+                    string action = actionChoice switch
                     {
-                        Console.WriteLine($"Error: {response.Content.FirstOrDefault()}");
+                        "1" => "Start",
+                        "2" => "Stop",
+                        "3" => "Restart",
+                        _ => ""
+                    };
+                    
+                    if (!string.IsNullOrEmpty(action) && !string.IsNullOrEmpty(resourceId))
+                    {
+                        var arguments = new Dictionary<string, object?>
+                        {
+                            ["resourceId"] = resourceId,
+                            ["command"] = action
+                        };
+                        
+                        Console.WriteLine($"\nExecuting: {action} on resource '{resourceId}'...");
+                        
+                        var response = await client.CallToolAsync(
+                            selectedTool.Name,
+                            arguments,
+                            progress: null,
+                            cancellationToken: default);
+                        
+                        if (response.IsError != true && response.Content.Count > 0)
+                        {
+                            var content = response.Content.First();
+                            if (content is ModelContextProtocol.Protocol.TextContentBlock textContent)
+                            {
+                                Console.WriteLine($"\n✓ {textContent.Text}");
+                            }
+                        }
+                        else if (response.IsError == true)
+                        {
+                            Console.WriteLine($"\n✗ Error: {response.Content.FirstOrDefault()}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input. Operation cancelled.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Tool '{selectedTool.Name}' requires custom implementation.");
+                    Console.WriteLine($"Tool '{selectedTool.Name}' is not yet implemented in this client.");
                 }
             }
         }

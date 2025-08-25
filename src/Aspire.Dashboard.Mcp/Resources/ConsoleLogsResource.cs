@@ -8,19 +8,19 @@ using ModelContextProtocol.Server;
 namespace Aspire.Dashboard.Mcp.Resources;
 
 /// <summary>
-/// MCP resource that provides access to console logs of a workload in the AppHost.
+/// MCP resource that provides access to console logs of a resource in the AppHost.
 /// </summary>
 [McpServerResourceType]
 public class ConsoleLogsResource
 {
     /// <summary>
-    /// Gets console logs for a specific workload.
+    /// Gets console logs for a specific AppHost resource.
     /// </summary>
-    [McpServerResource(UriTemplate = "workload://logs/{workloadName}", Name = "workload_logs")]
-    [Description("Get console logs for a specific workload")]
+    [McpServerResource(UriTemplate = "resource://console_logs/{resourceName}", Name = "console_logs")]
+    [Description("Get console logs for a specific AppHost resource")]
     public static async Task<string> GetConsoleLogs(
         IMcpServerDataProvider? dataProvider,
-        string workloadName,
+        string resourceName,
         CancellationToken cancellationToken)
     {
         if (dataProvider == null || !dataProvider.IsAvailable)
@@ -28,19 +28,19 @@ public class ConsoleLogsResource
             return "MCP server data provider is not available. Ensure the Dashboard is configured with a resource service client.";
         }
         
-        if (string.IsNullOrEmpty(workloadName))
+        if (string.IsNullOrEmpty(resourceName))
         {
-            return "Workload name is required.";
+            return "Resource name is required.";
         }
 
         try
         {
-            var logs = await dataProvider.GetWorkloadLogsAsync(workloadName, cancellationToken).ConfigureAwait(false);
-            return logs ?? $"No logs found for workload '{workloadName}'.";
+            var logs = await dataProvider.GetConsoleLogsAsync(resourceName, cancellationToken).ConfigureAwait(false);
+            return logs ?? $"No logs found for resource '{resourceName}'.";
         }
         catch (Exception ex)
         {
-            return $"Error getting logs for workload '{workloadName}': {ex.Message}";
+            return $"Error getting logs for resource '{resourceName}': {ex.Message}";
         }
     }
 }

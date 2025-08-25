@@ -7,33 +7,33 @@ using Xunit;
 
 namespace Aspire.Dashboard.Mcp.Tests.Resources;
 
-public class WorkloadsResourceTests
+public class AppHostResourcesResourceTests
 {
     [Fact]
-    public async Task ListWorkloads_WithProvider_ReturnsList()
+    public async Task ListResources_WithProvider_ReturnsList()
     {
         // Arrange
         var provider = new TestMcpServerDataProvider
         {
             IsAvailable = true,
-            WorkloadsToReturn = "Workload1\nWorkload2\nWorkload3"
+            ResourcesToReturn = "Resource1\nResource2\nResource3"
         };
         
         // Act
-        var result = await WorkloadsResource.ListWorkloads(
+        var result = await AppHostResourcesResource.ListResources(
             provider,
             CancellationToken.None);
         
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Workload1\nWorkload2\nWorkload3", result);
+        Assert.Equal("Resource1\nResource2\nResource3", result);
     }
     
     [Fact]
-    public async Task ListWorkloads_NoProvider_ReturnsWarning()
+    public async Task ListResources_NoProvider_ReturnsWarning()
     {
         // Act
-        var result = await WorkloadsResource.ListWorkloads(
+        var result = await AppHostResourcesResource.ListResources(
             null,
             CancellationToken.None);
         
@@ -43,7 +43,7 @@ public class WorkloadsResourceTests
     }
     
     [Fact]
-    public async Task ListWorkloads_ProviderThrows_ReturnsError()
+    public async Task ListResources_ProviderThrows_ReturnsError()
     {
         // Arrange
         var provider = new TestMcpServerDataProvider
@@ -53,13 +53,13 @@ public class WorkloadsResourceTests
         };
         
         // Act
-        var result = await WorkloadsResource.ListWorkloads(
+        var result = await AppHostResourcesResource.ListResources(
             provider,
             CancellationToken.None);
         
         // Assert
         Assert.NotNull(result);
-        Assert.Contains("Error listing workloads", result);
+        Assert.Contains("Error listing AppHost resources", result);
     }
     
     // Test implementation of the provider
@@ -67,10 +67,10 @@ public class WorkloadsResourceTests
     {
         public bool IsAvailable { get; set; }
         public string LogsToReturn { get; set; } = string.Empty;
-        public string WorkloadsToReturn { get; set; } = string.Empty;
+        public string ResourcesToReturn { get; set; } = string.Empty;
         public bool ShouldThrow { get; set; }
         
-        public Task<string> GetWorkloadLogsAsync(string workloadName, CancellationToken cancellationToken = default)
+        public Task<string> GetConsoleLogsAsync(string resourceName, CancellationToken cancellationToken = default)
         {
             if (ShouldThrow)
             {
@@ -79,13 +79,22 @@ public class WorkloadsResourceTests
             return Task.FromResult(LogsToReturn);
         }
         
-        public Task<string> ListWorkloadsAsync(CancellationToken cancellationToken = default)
+        public Task<string> ListAppHostResourcesAsync(CancellationToken cancellationToken = default)
         {
             if (ShouldThrow)
             {
                 throw new InvalidOperationException("Test exception");
             }
-            return Task.FromResult(WorkloadsToReturn);
+            return Task.FromResult(ResourcesToReturn);
+        }
+        
+        public Task<string> ExecuteResourceCommandAsync(string resourceId, string action, CancellationToken cancellationToken = default)
+        {
+            if (ShouldThrow)
+            {
+                throw new InvalidOperationException("Test exception");
+            }
+            return Task.FromResult($"State change '{action}' initiated for resource '{resourceId}'.");
         }
     }
 }

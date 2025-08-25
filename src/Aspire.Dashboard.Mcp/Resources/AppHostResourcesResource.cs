@@ -8,18 +8,18 @@ using ModelContextProtocol.Server;
 namespace Aspire.Dashboard.Mcp.Resources;
 
 /// <summary>
-/// MCP resource that provides access to workload information.
+/// MCP resource that provides access to AppHost resources information.
 /// </summary>
 [McpServerResourceType]
-public class WorkloadsResource
+public class AppHostResourcesResource
 {
     /// <summary>
-    /// Lists all available workloads.
+    /// Lists all available AppHost resources.
     /// </summary>
-    [McpServerResource]
-    [Description("List all workloads in the AppHost")]
-    public static async Task<string> ListWorkloads(
-        IMcpServerDataProvider? dataProvider,  // Injected via DI
+    [McpServerResource(Name = "apphost_resources")]
+    [Description("List all resources in the AppHost")]
+    public static async Task<string> ListResources(
+        IMcpServerDataProvider? dataProvider,
         CancellationToken cancellationToken)
     {
         if (dataProvider == null || !dataProvider.IsAvailable)
@@ -29,11 +29,11 @@ public class WorkloadsResource
         
         try
         {
-            return await dataProvider.ListWorkloadsAsync(cancellationToken).ConfigureAwait(false);
+            return await dataProvider.ListAppHostResourcesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            return $"Error listing workloads: {ex.Message}";
+            return $"Error listing AppHost resources: {ex.Message}";
         }
     }
 }

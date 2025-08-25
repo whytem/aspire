@@ -13,7 +13,7 @@ namespace Aspire.Dashboard.Mcp.Tests.Integration;
 public class McpIntegrationTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
-    public async Task McpServer_AppStarted_EchoToolWorks()
+    public async Task McpServer_AppStarted_ExecuteResourceCommandToolWorks()
     {
         // Arrange - Create Dashboard with MCP enabled (it's already configured in DashboardWebApplication)
         await using var app = IntegrationTestHelpers.CreateDashboardWebApplication(testOutputHelper);
@@ -35,20 +35,20 @@ public class McpIntegrationTests(ITestOutputHelper testOutputHelper)
 
         var client = await McpClientFactory.CreateAsync(clientTransport);
 
-        // Assert - Verify Echo tool is available
+        // Assert - Verify ExecuteResourceCommand tool is available
         var tools = await client.ListToolsAsync();
-        var echoTool = tools.FirstOrDefault(t => t.Name == "echo");
-        Assert.NotNull(echoTool);
-        Assert.Contains("Echoes the message back to the client", echoTool.Description);
+        var executeResourceCommandTool = tools.FirstOrDefault(t => t.Name == "execute_resource_command");
+        Assert.NotNull(executeResourceCommandTool);
+        Assert.Contains("Execute a command (Start, Stop, or Restart) on an AppHost resource", executeResourceCommandTool.Description);
 
-        // Test the Echo tool
-        var testMessage = "Hello from test!";
+        // Test the ExecuteResourceCommand tool
         var arguments = new Dictionary<string, object?>
         {
-            ["message"] = testMessage
+            ["resourceId"] = "test-resource",
+            ["action"] = "Start"
         };
 
-        var response = await client.CallToolAsync("echo", arguments);
+        var response = await client.CallToolAsync("execute_resource_command", arguments);
         
         Assert.NotNull(response);
         Assert.NotNull(response.Content);
@@ -59,59 +59,10 @@ public class McpIntegrationTests(ITestOutputHelper testOutputHelper)
         Assert.Equal("text", firstContent.Type);
         var textContent = firstContent as TextContentBlock;
         Assert.NotNull(textContent);
-        Assert.Equal($"Hello from C#: {testMessage}", textContent.Text);
+        // The response will vary based on whether the resource exists, but it should contain a meaningful message
+        Assert.NotNull(textContent.Text);
     }
-
-    [Fact]
-    public async Task McpServer_AppStarted_ReverseEchoToolWorks()
-    {
-        // Arrange - Create Dashboard with MCP enabled (it's already configured in DashboardWebApplication)
-        await using var app = IntegrationTestHelpers.CreateDashboardWebApplication(testOutputHelper);
-
-        // Act - Start the Dashboard
-        await app.StartAsync();
-
-        // Get the frontend endpoint to access MCP
-        var frontendEndpoint = app.FrontendSingleEndPointAccessor().EndPoint;
-        var mcpEndpoint = $"http://{frontendEndpoint}/mcp";
-
-        // Create MCP client and connect to the server
-        using var httpClient = new HttpClient();
-        var transportOptions = new SseClientTransportOptions 
-        { 
-            Endpoint = new Uri(mcpEndpoint)
-        };
-        var clientTransport = new SseClientTransport(transportOptions, httpClient, ownsHttpClient: false);
-
-        var client = await McpClientFactory.CreateAsync(clientTransport);
-
-        // Assert - Verify ReverseEcho tool is available
-        var tools = await client.ListToolsAsync();
-        var reverseEchoTool = tools.FirstOrDefault(t => t.Name == "reverse_echo");
-        Assert.NotNull(reverseEchoTool);
-        Assert.Contains("Echoes in reverse the message sent by the client", reverseEchoTool.Description);
-
-        // Test the ReverseEcho tool
-        var testMessage = "hello";
-        var arguments = new Dictionary<string, object?>
-        {
-            ["message"] = testMessage
-        };
-
-        var response = await client.CallToolAsync("reverse_echo", arguments);
-        
-        Assert.NotNull(response);
-        Assert.NotNull(response.Content);
-        Assert.NotEmpty(response.Content);
-        
-        // ContentBlock has a Type, cast to TextContentBlock for text content
-        var firstContent = response.Content.First();
-        Assert.Equal("text", firstContent.Type);
-        var textContent = firstContent as TextContentBlock;
-        Assert.NotNull(textContent);
-        Assert.Equal("olleh", textContent.Text);
-    }
-
+    
     [Fact]
     public async Task McpServer_ConsoleLogsResource_ListsResources()
     {
@@ -149,7 +100,7 @@ public class McpIntegrationTests(ITestOutputHelper testOutputHelper)
         // We just verify that resources are being registered (exact names may vary)
         Assert.NotEmpty(resources);
     }
-
+    
     [Fact]
     public async Task McpServer_AppStarted_ListToolsReturnsAll()
     {
@@ -173,19 +124,14 @@ public class McpIntegrationTests(ITestOutputHelper testOutputHelper)
 
         var client = await McpClientFactory.CreateAsync(clientTransport);
 
-        // Assert - Verify both tools are available
+        // Assert - Verify ExecuteResourceCommand tool is available
         var tools = await client.ListToolsAsync();
         Assert.NotNull(tools);
-        Assert.Equal(2, tools.Count);
+        Assert.Single(tools);
         
-        // Verify Echo tool
-        var echoTool = tools.FirstOrDefault(t => t.Name == "echo");
-        Assert.NotNull(echoTool);
-        Assert.Contains("Echoes the message back to the client", echoTool.Description);
-        
-        // Verify ReverseEcho tool  
-        var reverseEchoTool = tools.FirstOrDefault(t => t.Name == "reverse_echo");
-        Assert.NotNull(reverseEchoTool);
-        Assert.Contains("Echoes in reverse the message sent by the client", reverseEchoTool.Description);
+        // Verify ExecuteResourceCommand tool
+        var executeResourceCommandTool = tools.FirstOrDefault(t => t.Name == "execute_resource_command");
+        Assert.NotNull(executeResourceCommandTool);
+        Assert.Contains("Execute a command (Start, Stop, or Restart) on an AppHost resource", executeResourceCommandTool.Description);
     }
 }

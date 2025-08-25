@@ -10,7 +10,7 @@ namespace Aspire.Dashboard.Mcp.Tests.Resources;
 public class ConsoleLogsResourceTests
 {
     [Fact]
-    public async Task GetWorkloadLogs_WithProvider_ReturnsLogs()
+    public async Task GetResourceLogs_WithProvider_ReturnsLogs()
     {
         // Arrange
         var provider = new TestMcpServerDataProvider
@@ -20,9 +20,9 @@ public class ConsoleLogsResourceTests
         };
         
         // Act
-        var result = await ConsoleLogsResource.GetWorkloadLogs(
+        var result = await ConsoleLogsResource.GetConsoleLogs(
             provider,
-            "test-workload",
+            "test-resource", 
             CancellationToken.None);
         
         // Assert
@@ -31,12 +31,12 @@ public class ConsoleLogsResourceTests
     }
     
     [Fact]
-    public async Task GetWorkloadLogs_NoProvider_ReturnsWarning()
+    public async Task GetResourceLogs_NoProvider_ReturnsWarning()
     {
         // Act
-        var result = await ConsoleLogsResource.GetWorkloadLogs(
+        var result = await ConsoleLogsResource.GetConsoleLogs(
             null,
-            "test-workload",
+            "test-resource", 
             CancellationToken.None);
         
         // Assert
@@ -45,20 +45,20 @@ public class ConsoleLogsResourceTests
     }
     
     [Fact]
-    public async Task GetWorkloadLogs_EmptyWorkloadName_ReturnsError()
+    public async Task GetResourceLogs_EmptyResourceName_ReturnsError()
     {
         // Arrange
         var provider = new TestMcpServerDataProvider { IsAvailable = true };
         
         // Act
-        var result = await ConsoleLogsResource.GetWorkloadLogs(
+        var result = await ConsoleLogsResource.GetConsoleLogs(
             provider,
             "",
             CancellationToken.None);
         
         // Assert
         Assert.NotNull(result);
-        Assert.Contains("Workload name is required", result);
+        Assert.Contains("Resource name is required", result);
     }
     
     // Test implementation of the provider
@@ -66,10 +66,10 @@ public class ConsoleLogsResourceTests
     {
         public bool IsAvailable { get; set; }
         public string LogsToReturn { get; set; } = string.Empty;
-        public string WorkloadsToReturn { get; set; } = string.Empty;
+        public string ResourcesToReturn { get; set; } = string.Empty;
         public bool ShouldThrow { get; set; }
         
-        public Task<string> GetWorkloadLogsAsync(string workloadName, CancellationToken cancellationToken = default)
+        public Task<string> GetConsoleLogsAsync(string resourceName, CancellationToken cancellationToken = default)
         {
             if (ShouldThrow)
             {
@@ -78,13 +78,22 @@ public class ConsoleLogsResourceTests
             return Task.FromResult(LogsToReturn);
         }
         
-        public Task<string> ListWorkloadsAsync(CancellationToken cancellationToken = default)
+        public Task<string> ListAppHostResourcesAsync(CancellationToken cancellationToken = default)
         {
             if (ShouldThrow)
             {
                 throw new InvalidOperationException("Test exception");
             }
-            return Task.FromResult(WorkloadsToReturn);
+            return Task.FromResult(ResourcesToReturn);
+        }
+        
+        public Task<string> ExecuteResourceCommandAsync(string resourceId, string action, CancellationToken cancellationToken = default)
+        {
+            if (ShouldThrow)
+            {
+                throw new InvalidOperationException("Test exception");
+            }
+            return Task.FromResult($"State change '{action}' initiated for resource '{resourceId}'.");
         }
     }
 }
