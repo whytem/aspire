@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
+    <!--
+      CS8002: Referenced assembly does not have a strong name
+    -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.XUnitV3Extensions" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="ModelContextProtocol" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Aspire.Dashboard.Mcp\Aspire.Dashboard.Mcp.csproj" />
+    <ProjectReference Include="..\Aspire.Dashboard.Tests\Aspire.Dashboard.Tests.csproj">
+      <Aliases>DashboardTests</Aliases>
+    </ProjectReference>
+    <ProjectReference Include="..\Aspire.Dashboard.Components.Tests\Aspire.Dashboard.Components.Tests.csproj" />
+  </ItemGroup>
+
+</Project>

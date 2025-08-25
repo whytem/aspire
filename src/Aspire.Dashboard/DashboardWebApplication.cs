@@ -15,6 +15,7 @@ using Aspire.Dashboard.Authentication.OtlpApiKey;
 using Aspire.Dashboard.Components;
 using Aspire.Dashboard.Components.Pages;
 using Aspire.Dashboard.Configuration;
+using Aspire.Dashboard.Mcp;
 using Aspire.Dashboard.Model;
 using Aspire.Dashboard.Otlp;
 using Aspire.Dashboard.Otlp.Grpc;
@@ -300,6 +301,12 @@ public sealed class DashboardWebApplication : IAsyncDisposable
             options.Cookie.Name = DashboardAntiForgeryCookieName;
         });
 
+        // Register MCP server data provider
+        builder.Services.AddSingleton<Aspire.Dashboard.Mcp.Providers.IMcpServerDataProvider, McpIntegration.DashboardMcpServerDataProvider>();
+        
+        // Add MCP server services
+        builder.Services.AddDashboardMcpServer();
+
         _app = builder.Build();
 
         _dashboardOptionsMonitor = _app.Services.GetRequiredService<IOptionsMonitor<DashboardOptions>>();
@@ -470,6 +477,9 @@ public sealed class DashboardWebApplication : IAsyncDisposable
 
         _app.MapDashboardApi(dashboardOptions);
         _app.MapDashboardHealthChecks();
+
+        // Configure MCP server endpoints
+        _app.MapMcpServer();
     }
 
     private ILogger<DashboardWebApplication> GetLogger()

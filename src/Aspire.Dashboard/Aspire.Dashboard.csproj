@@ -41,6 +41,7 @@
   <Target Name="ReturnPackageVersion" Returns="$(PackageVersion)" />
 
   <ItemGroup>
+    <ProjectReference Include="..\Aspire.Dashboard.Mcp\Aspire.Dashboard.Mcp.csproj" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Humanizer.Core" />
     <PackageReference Include="Markdig" />
